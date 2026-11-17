@@ -1,0 +1,322 @@
+:root {
+    --bg-dark: #0b0f17;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-hover: rgba(255, 255, 255, 0.09);
+    --accent-guinda: #7A1C2E;
+    --accent-guinda-light: #a3263e;
+    --accent-orange: #FF6B00;
+    --text-main: #F8FAFC;
+    --text-muted: #94A3B8;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    background-color: var(--bg-dark);
+    background-image: radial-gradient(circle at 12% 18%, rgba(122, 28, 46, 0.38) 0%, transparent 42%), radial-gradient(circle at 88% 82%, rgba(255, 107, 0, 0.18) 0%, transparent 40%);
+    background-attachment: fixed;
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.5;
+}
+
+/* Barra de Navegación Glassmorphism */
+.glass-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(11, 15, 23, 0.72);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 1rem 2rem;
+}
+
+.nav-container {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.brand-logo {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-main);
+    text-decoration: none;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.brand-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--accent-orange);
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.nav-links {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.nav-link-item {
+    color: var(--text-main);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+    .nav-link-item:hover {
+        background: var(--glass-bg);
+        border-color: var(--glass-border);
+    }
+
+/* Contenedor Principal */
+.main-wrapper {
+    max-width: 1180px;
+    width: 100%;
+    margin: 2.2rem auto;
+    padding: 0 1.25rem;
+    flex: 1;
+}
+
+/* Tarjetas Glassmorphism */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.section-header {
+    margin-bottom: 1.75rem;
+}
+
+.section-title {
+    font-size: 1.85rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+
+.section-subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+}
+
+/* Grid Responsivo y Adaptativo */
+.concerts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 1.5rem;
+}
+
+.concert-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+    .concert-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255, 255, 255, 0.25);
+    }
+
+.badge-tag {
+    display: inline-block;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 6px;
+    background: rgba(122, 28, 46, 0.45);
+    border: 1px solid rgba(163, 38, 62, 0.6);
+    color: #ffd6de;
+    margin-bottom: 0.85rem;
+}
+
+.artist-name {
+    font-size: 1.45rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+}
+
+.tour-name {
+    color: var(--accent-orange);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.meta-list {
+    list-style: none;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+}
+
+    .meta-list li {
+        margin-bottom: 0.4rem;
+    }
+
+.price-strip {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.85rem 0;
+    border-top: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--glass-border);
+    margin-bottom: 1.25rem;
+    font-size: 0.9rem;
+}
+
+/* Botones */
+.btn-glass {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.75rem 1.35rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: linear-gradient(135deg, var(--accent-guinda), var(--accent-guinda-light));
+    color: #fff;
+    transition: all 0.2s ease;
+}
+
+    .btn-glass:hover {
+        filter: brightness(1.12);
+    }
+
+.btn-secondary-glass {
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text-main);
+}
+
+/* Formularios */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+.form-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.glass-input {
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    outline: none;
+}
+
+    .glass-input:focus {
+        border-color: var(--accent-orange);
+    }
+
+/* Modal de Engaño Visual de Confirmación */
+.modal-backdrop-custom {
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 9, 15, 0.82);
+    backdrop-filter: blur(12px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    padding: 1rem;
+}
+
+.modal-card {
+    max-width: 460px;
+    width: 100%;
+    text-align: center;
+}
+
+.slider-track {
+    position: relative;
+    width: 100%;
+    height: 52px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--glass-border);
+    border-radius: 26px;
+    margin-top: 1.25rem;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+}
+
+.slider-Input {
+    width: 100%;
+    accent-color: var(--accent-orange);
+    cursor: pointer;
+}
+
+.code-badge-large {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 6px;
+    color: var(--accent-orange);
+    background: rgba(255, 107, 0, 0.1);
+    border: 1px solid rgba(255, 107, 0, 0.35);
+    padding: 0.6rem 1.4rem;
+    border-radius: 12px;
+    display: inline-block;
+    margin: 0.75rem 0;
+}
+
+/* Media Queries para Diseño Adaptativo */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .glass-nav {
+        padding: 0.85rem 1rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+}

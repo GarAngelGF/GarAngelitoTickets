@@ -1,0 +1,43 @@
+﻿@model IEnumerable<GarAngelitoTickets.Models.Boleto>
+@{
+    ViewData["Title"] = "Consulta de Boletos";
+}
+
+<div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+    <div>
+        <h1 class="section-title">Consulta de Boletos Adquiridos</h1>
+        <p class="section-subtitle">Registros almacenados en SQL Server asociados por código numérico de 6 dígitos.</p>
+    </div>
+
+    <form asp-action="Consultar" method="get" style="display:flex; gap:0.5rem;" autocomplete="off">
+        <input type="text" name="buscarCodigo" value="@ViewBag.CodigoBuscado" class="glass-input" placeholder="Buscar código (ej. 482910)" maxlength="6" autocomplete="off" />
+        <button type="submit" class="btn-glass">Buscar</button>
+        <a asp-action="Consultar" class="btn-glass btn-secondary-glass">Ver Todos</a>
+    </form>
+</div>
+
+<div class="concerts-grid">
+    @foreach (var b in Model)
+    {
+        <div class="glass-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                <span class="badge-tag" style="margin:0;"> Zona @b.Zona (@b.Cantidad)</span>
+                <strong style="color:var(--accent-orange); letter-spacing:2px; font-size:1.1rem;">#@b.CodigoNumerico</strong>
+            </div>
+
+            <h3 style="font-size:1.2rem; margin-bottom:0.2rem;">@b.Concierto?.Artista</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">@b.Concierto?.Tour</p>
+
+            <ul class="meta-list">
+                <li><strong>Comprador:</strong> @b.NombreComprador</li>
+                <li><strong>Correo:</strong> @b.Correo</li>
+                <li><strong>Teléfono:</strong> @b.Telefono</li>
+                <li><strong>Total Pagado:</strong> $@b.TotalPagado.ToString("N2") MXN</li>
+            </ul>
+
+            <a asp-action="Confirmacion" asp-route-codigo="@b.CodigoNumerico" class="btn-glass btn-secondary-glass" style="width:100%;">
+                Ver QR y Código de 6 Posiciones
+            </a>
+        </div>
+    }
+</div>

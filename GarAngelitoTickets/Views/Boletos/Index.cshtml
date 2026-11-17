@@ -1,0 +1,43 @@
+﻿@model IEnumerable<GarAngelitoTickets.Models.Concierto>
+@{
+    ViewData["Title"] = "Cartelera de Conciertos";
+}
+
+<div class="section-header" style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1rem;">
+    <div>
+        <h1 class="section-title">Cartelera Oficial</h1>
+        <p class="section-subtitle">Reserva y adquiere tus boletos digitales con verificación QR de 6 posiciones.</p>
+    </div>
+    <form asp-action="Consultar" method="get" style="display:flex; gap:0.5rem;" autocomplete="off">
+        <input type="text" name="buscarCodigo" class="glass-input" placeholder="Código de 6 dígitos..." maxlength="6" autocomplete="off" />
+        <button type="submit" class="btn-glass btn-secondary-glass">Verificar</button>
+    </form>
+</div>
+
+<div class="concerts-grid">
+    @foreach (var item in Model)
+    {
+        <article class="glass-panel concert-card">
+            <div>
+                <span class="badge-tag">@item.CupoDisponible lugares disponibles</span>
+                <h2 class="artist-name">@item.Artista</h2>
+                <p class="tour-name">@item.Tour</p>
+
+                <ul class="meta-list">
+                    <li><strong>Recinto:</strong> @item.Recinto</li>
+                    <li><strong>Fecha:</strong> @item.Fecha.ToString("dd MMM yyyy - HH:mm") hrs</li>
+                </ul>
+            </div>
+
+            <div>
+                <div class="price-strip">
+                    <span>General: <strong>$@item.PrecioGeneral.ToString("N2")</strong></span>
+                    <span>VIP: <strong>$@item.PrecioVIP.ToString("N2")</strong></span>
+                </div>
+                <a asp-action="Comprar" asp-route-id="@item.Id" class="btn-glass" style="width:100%;">
+                    Seleccionar Boletos
+                </a>
+            </div>
+        </article>
+    }
+</div>

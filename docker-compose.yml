@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  sqlserver-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: garangelito-sql
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=GarAngelito2026!Strong
+    ports:
+      - "1433:1433"
+
+  microservicio-codigos:
+    build:
+      context: .
+      dockerfile: GarAngelitoTickets/Dockerfile
+    container_name: garangelito-microservice-codigos
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver-db;Database=GarAngelitoTicketsDB;User Id=sa;Password=GarAngelito2026!Strong;TrustServerCertificate=True;
+    depends_on:
+      - sqlserver-db
+
+  garangelitotickets:
+    build:
+      context: .
+      dockerfile: GarAngelitoTickets/Dockerfile
+    container_name: garangelito-tickets-web
+    ports:
+      - "5080:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - MicroservicioUrl=http://microservicio-codigos:8080/
+      - ConnectionStrings__DefaultConnection=Server=sqlserver-db;Database=GarAngelitoTicketsDB;User Id=sa;Password=GarAngelito2026!Strong;TrustServerCertificate=True;
+    depends_on:
+      - sqlserver-db
+      - microservicio-codigos

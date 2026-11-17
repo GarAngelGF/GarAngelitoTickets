@@ -1,0 +1,42 @@
+﻿@model GarAngelitoTickets.Models.Boleto
+@{
+    ViewData["Title"] = "Confirmación de Boleto";
+}
+
+<div class="glass-panel" style="max-width: 680px; margin: 0 auto; text-align: center;">
+    <span class="badge-tag">Compra Confirmada y Registrada</span>
+    <h1 class="section-title">@Model.Concierto?.Artista</h1>
+    <p class="section-subtitle">@Model.Concierto?.Tour — @Model.Concierto?.Recinto</p>
+
+    <div style="margin: 1.5rem 0;">
+        <p style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">
+            Código Numérico Asociado (6 Posiciones)
+        </p>
+        <div class="code-badge-large">@Model.CodigoNumerico</div>
+    </div>
+
+    <div style="background:#fff; padding:1rem; border-radius:14px; display:inline-block; margin-bottom:1.25rem;">
+        <img src="@ViewBag.QrBase64" alt="Código QR del Boleto" style="width:210px; height:210px; display:block;" />
+    </div>
+    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.5rem;">
+        Escanea el código QR con tu celular para visualizar el código de 6 dígitos (<strong>@Model.CodigoNumerico</strong>) y los datos del titular.
+    </p>
+
+    <div class="price-strip" style="text-align:left; display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+        <div><strong>Titular:</strong> @Model.NombreComprador</div>
+        <div><strong>Correo:</strong> @Model.Correo</div>
+        <div><strong>Teléfono:</strong> @Model.Telefono</div>
+        <div><strong>Zona / Accesos:</strong> @Model.Zona (@Model.Cantidad)</div>
+        <div><strong>Total Pagado:</strong> $@Model.TotalPagado.ToString("N2")</div>
+        <div><strong>Fecha:</strong> @Model.FechaCompra.ToString("dd/MM/yyyy HH:mm")</div>
+    </div>
+
+    <div style="display:flex; gap:1rem; justify-content:center; margin-top:1rem;">
+        <a asp-action="Consultar" asp-route-buscarCodigo="@Model.CodigoNumerico" class="btn-glass">
+            Verificar en Base de Datos
+        </a>
+        <a asp-action="Index" class="btn-glass btn-secondary-glass">
+            Volver a Cartelera
+        </a>
+    </div>
+</div>
