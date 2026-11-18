@@ -1,7 +1,7 @@
-﻿using GarAngelitoTickets.Data;
+﻿using System.Security.Cryptography;
+using GarAngelitoTickets.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
 
 namespace GarAngelitoTickets.Controllers
 {
@@ -16,20 +16,18 @@ namespace GarAngelitoTickets.Controllers
             _context = context;
         }
 
-        [HttpGet("generar-codigo")]
+        [HttpGet("generar")]
         public async Task<IActionResult> GenerarCodigoUnico()
         {
             string codigo;
-            bool existe;
-
             do
             {
                 int numero = RandomNumberGenerator.GetInt32(100000, 1000000);
-                codigo = numero.ToString("D6");
-                existe = await _context.Boletos.AnyAsync(b => b.CodigoNumerico == codigo);
-            } while (existe);
+                codigo = numero.ToString();
+            }
+            while (await _context.Boletos.AnyAsync(b => b.CodigoNumerico == codigo));
 
-            return Ok(new { Codigo = codigo, Timestamp = DateTime.UtcNow });
+            return Ok(new { codigo });
         }
     }
 }

@@ -1,150 +1,96 @@
 ﻿@model GarAngelitoTickets.Models.Boleto
 @{
-    ViewData["Title"] = "Adquirir Boletos";
+    ViewData["Title"] = "Reservar Boletos";
     var concierto = ViewBag.Concierto as GarAngelitoTickets.Models.Concierto;
 }
 
-<div class="glass-panel" style="max-width: 760px; margin: 0 auto;">
-    <div class="section-header">
-        <span class="badge-tag">Registro sin prellenado activo</span>
-        <h1 class="section-title">@concierto?.Artista — @concierto?.Tour</h1>
-        <p class="section-subtitle">@concierto?.Recinto | @concierto?.Fecha.ToString("dd/MM/yyyy HH:mm") hrs</p>
-    </div>
-
-    <form id="formCompra" asp-action="Comprar" method="post" autocomplete="off" novalidate>
-        <input type="hidden" asp-for="ConciertoId" value="@concierto?.Id" />
-
-        <div class="form-grid">
-            <div class="form-group full-width">
-                <label class="form-label">Nombre Completo del Titular</label>
-                <input asp-for="NombreComprador" class="glass-input limpiar-campo" value="" autocomplete="new-password" placeholder="Ingresa tu nombre sin datos prellenados" required />
-                <span asp-validation-for="NombreComprador" style="color:#ff8080; font-size:0.82rem;"></span>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Correo Electrónico</label>
-                <input asp-for="Correo" type="email" class="glass-input limpiar-campo" value="" autocomplete="new-password" placeholder="correo@dominio.com" required />
-                <span asp-validation-for="Correo" style="color:#ff8080; font-size:0.82rem;"></span>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Teléfono (10 dígitos)</label>
-                <input asp-for="Telefono" type="tel" maxlength="10" class="glass-input limpiar-campo" value="" autocomplete="new-password" placeholder="5500000000" required />
-                <span asp-validation-for="Telefono" style="color:#ff8080; font-size:0.82rem;"></span>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Zona del Recinto</label>
-                <select asp-for="Zona" id="selectZona" class="glass-input limpiar-campo" required>
-                    <option value="" selected disabled>-- Selecciona una zona --</option>
-                    <option value="General" data-precio="@concierto?.PrecioGeneral">General ($@concierto?.PrecioGeneral.ToString("N2"))</option>
-                    <option value="VIP" data-precio="@concierto?.PrecioVIP">VIP ($@concierto?.PrecioVIP.ToString("N2"))</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Cantidad de Boletos (Máx. 6)</label>
-                <input asp-for="Cantidad" id="inputCantidad" type="number" min="1" max="6" value="" class="glass-input limpiar-campo" autocomplete="off" placeholder="1 - 6" required />
-            </div>
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="mb-3">
+            <a asp-action="Index" class="text-secondary small">&larr; Volver a la cartelera</a>
         </div>
 
-        <div class="price-strip" style="margin-top: 1.5rem;">
-            <span>Total estimado a pagar:</span>
-            <strong id="montoTotalTexto" style="font-size:1.25rem; color:var(--accent-orange);">$0.00 MXN</strong>
-        </div>
-
-        <div style="display:flex; gap:1rem; justify-content:flex-end;">
-            <a asp-action="Index" class="btn-glass btn-secondary-glass">Cancelar</a>
-            <button type="button" id="btnAbrirEngano" class="btn-glass">Continuar a Confirmación</button>
-        </div>
-    </form>
-</div>
-
-<!-- Modal de Engaño Visual para Confirmar la Compra -->
-<div class="modal-backdrop-custom" id="modalEnganoVisual">
-    <div class="glass-panel modal-card">
-        <span class="badge-tag">Verificación de Seguridad Interactiva</span>
-        <h2 style="font-size:1.35rem; margin-bottom:0.5rem;">Confirmación de Orden</h2>
-        <p id="resumenEngano" style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;"></p>
-
-        <div id="pasoDeslizar">
-            <p style="font-size:0.85rem; color:#ffd6de;">Desliza la barra hasta el 100% para autorizar y emitir tu código de 6 dígitos:</p>
-            <div class="slider-track">
-                <input type="range" id="sliderConfirmacion" class="slider-Input" min="0" max="100" value="0" />
+        <div class="glass-panel">
+            <div class="border-bottom pb-3 mb-4" style="border-color: var(--border-subtle) !important;">
+                <span class="badge-minimal mb-2">@concierto?.Fecha.ToString("dd MMM yyyy · HH:mm")</span>
+                <h1 class="h4 fw-semibold mb-1">@concierto?.Artista</h1>
+                <p class="text-secondary small mb-0">@concierto?.Tour — @concierto?.Recinto</p>
             </div>
-        </div>
 
-        <div id="pasoProcesando" style="display:none; margin-top:1.25rem;">
-            <p id="textoEstadoProceso" style="color:var(--accent-orange); font-weight:600;">Conectando con pasarela y reservando asientos...</p>
-        </div>
+            <form asp-action="Comprar" method="post" id="formCompra" autocomplete="off">
+                <input type="hidden" asp-for="ConciertoId" value="@concierto?.Id" />
 
-        <div style="margin-top:1.25rem;">
-            <button type="button" id="btnCerrarModal" class="btn-glass btn-secondary-glass" style="width:100%;">Volver al formulario</button>
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                <div class="mb-3">
+                    <label class="form-label-minimal">Nombre completo del titular</label>
+                    <input asp-for="NombreComprador" class="glass-input" value="" placeholder="Nombre y apellidos" autocomplete="off" required />
+                    <span asp-validation-for="NombreComprador" class="text-danger small"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label-minimal">Correo electrónico</label>
+                        <input asp-for="Correo" type="email" class="glass-input" value="" placeholder="correo@dominio.com" autocomplete="off" required />
+                        <span asp-validation-for="Correo" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-minimal">Teléfono</label>
+                        <input asp-for="Telefono" class="glass-input" value="" placeholder="10 dígitos" autocomplete="off" required />
+                        <span asp-validation-for="Telefono" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label-minimal">Zona</label>
+                        <select asp-for="Zona" id="selectZona" class="glass-input">
+                            <option value="General" data-precio="@concierto?.PrecioGeneral">General (@concierto?.PrecioGeneral.ToString("C"))</option>
+                            <option value="VIP" data-precio="@concierto?.PrecioVIP">VIP (@concierto?.PrecioVIP.ToString("C"))</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-minimal">Cantidad (Máx. 10)</label>
+                        <input asp-for="Cantidad" id="inputCantidad" type="number" min="1" max="10" value="1" class="glass-input" required />
+                        <span asp-validation-for="Cantidad" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center p-3 mb-4 rounded" style="background-color: var(--bg-main); border: 1px solid var(--border-subtle);">
+                    <span class="text-secondary small">Total a pagar</span>
+                    <span id="labelTotal" class="h5 fw-semibold mb-0">@concierto?.PrecioGeneral.ToString("C")</span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <a asp-action="Index" class="btn-secondary-minimal">Cancelar</a>
+                    <button type="submit" class="btn-glass flex-grow-1">
+                        Confirmar compra
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
-        // Garantiza que jamás existan datos de prellenado al cargar o regresar a la vista
-        window.addEventListener('pageshow', function () {
-            document.querySelectorAll('.limpiar-campo').forEach(el => {
-                el.value = '';
-            });
-        });
+        (function () {
+            const selectZona = document.getElementById('selectZona');
+            const inputCantidad = document.getElementById('inputCantidad');
+            const labelTotal = document.getElementById('labelTotal');
 
-        const selectZona = document.getElementById('selectZona');
-        const inputCantidad = document.getElementById('inputCantidad');
-        const montoTotalTexto = document.getElementById('montoTotalTexto');
-
-        function actualizarTotal() {
-            const opcion = selectZona.options[selectZona.selectedIndex];
-            const precio = opcion && opcion.dataset.precio ? parseFloat(opcion.dataset.precio) : 0;
-            const cantidad = parseInt(inputCantidad.value) || 0;
-            const total = precio * cantidad;
-            montoTotalTexto.textContent = '$' + total.toFixed(2) + ' MXN';
-        }
-
-        selectZona.addEventListener('change', actualizarTotal);
-        inputCantidad.addEventListener('input', actualizarTotal);
-
-        // Flujo del Engaño Visual para Confirmar la Compra
-        const modal = document.getElementById('modalEnganoVisual');
-        const slider = document.getElementById('sliderConfirmacion');
-        const form = document.getElementById('formCompra');
-
-        document.getElementById('btnAbrirEngano').addEventListener('click', function () {
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
+            function calcularTotal() {
+                const option = selectZona.options[selectZona.selectedIndex];
+                const precio = parseFloat(option.getAttribute('data-precio')) || 0;
+                const cantidad = parseInt(inputCantidad.value) || 1;
+                const total = precio * cantidad;
+                labelTotal.textContent = total.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
             }
-            const nombre = document.getElementById('NombreComprador').value;
-            document.getElementById('resumenEngano').textContent =
-                `Titular: ${nombre} | Total: ${montoTotalTexto.textContent}`;
-            slider.value = 0;
-            modal.style.display = 'flex';
-        });
 
-        document.getElementById('btnCerrarModal').addEventListener('click', function () {
-            modal.style.display = 'none';
-        });
-
-        slider.addEventListener('input', function () {
-            if (parseInt(this.value) === 100) {
-                document.getElementById('pasoDeslizar').style.display = 'none';
-                document.getElementById('btnCerrarModal').style.display = 'none';
-                const pasoProcesando = document.getElementById('pasoProcesando');
-                const textoEstado = document.getElementById('textoEstadoProceso');
-                pasoProcesando.style.display = 'block';
-
-                setTimeout(() => {
-                    textoEstado.textContent = 'Autorización aprobada. Generando código numérico de 6 posiciones...';
-                }, 700);
-
-                setTimeout(() => {
-                    form.submit();
-                }, 1500);
-            }
-        });
+            selectZona.addEventListener('change', calcularTotal);
+            inputCantidad.addEventListener('input', calcularTotal);
+            calcularTotal();
+        })();
     </script>
 }

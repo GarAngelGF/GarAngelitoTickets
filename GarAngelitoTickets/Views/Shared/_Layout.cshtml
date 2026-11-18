@@ -4,26 +4,37 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - GarAngelitoTickets</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
     <header class="glass-nav">
-        <div class="nav-container">
-            <a class="brand-logo" asp-controller="Boletos" asp-action="Index">
-                <span class="brand-dot"></span>
-                GarAngelitoTickets
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="brand-wrapper" asp-controller="Boletos" asp-action="Index">
+                <span class="brand-title">GarAngelitoTickets</span>
+                <span class="brand-slogan">mejor que "YaPase" desde 2026</span>
             </a>
-            <nav class="nav-links">
-                <a class="nav-link-item" asp-controller="Boletos" asp-action="Index">Cartelera</a>
-                <a class="nav-link-item" asp-controller="Boletos" asp-action="Consultar">Consultar Boletos</a>
+            <nav class="d-flex gap-2">
+                <a class="nav-link-minimal" asp-controller="Boletos" asp-action="Index">Cartelera</a>
+                <a class="nav-link-minimal" asp-controller="Boletos" asp-action="Consultar">Mis Boletos</a>
             </nav>
         </div>
     </header>
 
-    <main class="main-wrapper">
+    <main class="container py-4">
         @RenderBody()
     </main>
 
+    <footer class="footer-minimal">
+        <div class="container d-flex justify-content-between align-items-center">
+            <span class="fw-semibold text-dark">GarAngelitoTickets</span>
+            <span>mejor que "YaPase" desde 2026</span>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

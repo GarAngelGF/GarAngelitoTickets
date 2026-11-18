@@ -12,5 +12,13 @@ namespace GarAngelitoTickets.Data
 
         public DbSet<Concierto> Conciertos { get; set; }
         public DbSet<Boleto> Boletos { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Concierto>().ToTable("Conciertos");
+            modelBuilder.Entity<Boleto>().ToTable("Boletos");
+        }
     }
 }

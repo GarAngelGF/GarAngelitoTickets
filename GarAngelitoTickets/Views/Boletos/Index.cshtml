@@ -1,43 +1,62 @@
 ﻿@model IEnumerable<GarAngelitoTickets.Models.Concierto>
 @{
-    ViewData["Title"] = "Cartelera de Conciertos";
+    ViewData["Title"] = "Cartelera";
 }
 
-<div class="section-header" style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1rem;">
-    <div>
-        <h1 class="section-title">Cartelera Oficial</h1>
-        <p class="section-subtitle">Reserva y adquiere tus boletos digitales con verificación QR de 6 posiciones.</p>
+<div class="mb-4">
+    <h1 class="section-title">Cartelera de Conciertos</h1>
+    <p class="section-subtitle">GarAngelitoTickets — mejor que "YaPase" desde 2026.</p>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="glass-panel text-center py-5">
+        <p class="mb-1 fw-semibold">No hay conciertos registrados en la base de datos.</p>
+        <p class="text-secondary small mb-0">Verifica la tabla Conciertos en SQL Server.</p>
     </div>
-    <form asp-action="Consultar" method="get" style="display:flex; gap:0.5rem;" autocomplete="off">
-        <input type="text" name="buscarCodigo" class="glass-input" placeholder="Código de 6 dígitos..." maxlength="6" autocomplete="off" />
-        <button type="submit" class="btn-glass btn-secondary-glass">Verificar</button>
-    </form>
-</div>
+}
+else
+{
+    <div class="concerts-grid">
+        @foreach (var item in Model)
+        {
+            <article class="concert-card">
+                <div>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge-minimal">@item.Fecha.ToString("dd MMM yyyy · HH:mm")</span>
+                        <span class="badge-minimal">@item.CupoDisponible disponibles</span>
+                    </div>
 
-<div class="concerts-grid">
-    @foreach (var item in Model)
-    {
-        <article class="glass-panel concert-card">
-            <div>
-                <span class="badge-tag">@item.CupoDisponible lugares disponibles</span>
-                <h2 class="artist-name">@item.Artista</h2>
-                <p class="tour-name">@item.Tour</p>
-
-                <ul class="meta-list">
-                    <li><strong>Recinto:</strong> @item.Recinto</li>
-                    <li><strong>Fecha:</strong> @item.Fecha.ToString("dd MMM yyyy - HH:mm") hrs</li>
-                </ul>
-            </div>
-
-            <div>
-                <div class="price-strip">
-                    <span>General: <strong>$@item.PrecioGeneral.ToString("N2")</strong></span>
-                    <span>VIP: <strong>$@item.PrecioVIP.ToString("N2")</strong></span>
+                    <h2 class="h5 fw-semibold mb-1">@item.Artista</h2>
+                    @if (!string.IsNullOrWhiteSpace(item.Tour))
+                    {
+                        <p class="text-secondary small mb-2">@item.Tour</p>
+                    }
+                    <p class="text-secondary small mb-3">@item.Recinto</p>
                 </div>
-                <a asp-action="Comprar" asp-route-id="@item.Id" class="btn-glass" style="width:100%;">
-                    Seleccionar Boletos
-                </a>
-            </div>
-        </article>
-    }
-</div>
+
+                <div>
+                    <div class="price-row">
+                        <span class="price-label">General</span>
+                        <span class="price-value">@item.PrecioGeneral.ToString("C")</span>
+                    </div>
+                    <div class="price-row mb-3">
+                        <span class="price-label">VIP</span>
+                        <span class="price-value">@item.PrecioVIP.ToString("C")</span>
+                    </div>
+
+                    @if (item.CupoDisponible > 0)
+                    {
+                        <a asp-action="Comprar" asp-route-id="@item.Id" class="btn-glass w-100">
+                            Reservar boletos
+                        </a>
+                    }
+                    else
+                    {
+                        <button class="btn-glass w-100" disabled>Agotado</button>
+                    }
+                </div>
+            </article>
+        }
+    </div>
+}

@@ -1,42 +1,50 @@
 ﻿@model GarAngelitoTickets.Models.Boleto
 @{
-    ViewData["Title"] = "Confirmación de Boleto";
+    ViewData["Title"] = "Confirmación de Compra";
 }
 
-<div class="glass-panel" style="max-width: 680px; margin: 0 auto; text-align: center;">
-    <span class="badge-tag">Compra Confirmada y Registrada</span>
-    <h1 class="section-title">@Model.Concierto?.Artista</h1>
-    <p class="section-subtitle">@Model.Concierto?.Tour — @Model.Concierto?.Recinto</p>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="glass-panel text-center">
+            <span class="badge-minimal mb-2">Reserva Confirmada</span>
+            <h1 class="h4 fw-semibold mb-1">@Model.Concierto?.Artista</h1>
+            <p class="text-secondary small mb-4">@Model.Concierto?.Recinto · @Model.Concierto?.Fecha.ToString("dd MMM yyyy HH:mm")</p>
 
-    <div style="margin: 1.5rem 0;">
-        <p style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">
-            Código Numérico Asociado (6 Posiciones)
-        </p>
-        <div class="code-badge-large">@Model.CodigoNumerico</div>
-    </div>
+            @if (ViewBag.QrBase64 != null)
+            {
+                <div class="bg-white p-3 d-inline-block rounded mb-3">
+                    <img src="@ViewBag.QrBase64" alt="Código QR del boleto" width="160" height="160" />
+                </div>
+            }
 
-    <div style="background:#fff; padding:1rem; border-radius:14px; display:inline-block; margin-bottom:1.25rem;">
-        <img src="@ViewBag.QrBase64" alt="Código QR del Boleto" style="width:210px; height:210px; display:block;" />
-    </div>
-    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.5rem;">
-        Escanea el código QR con tu celular para visualizar el código de 6 dígitos (<strong>@Model.CodigoNumerico</strong>) y los datos del titular.
-    </p>
+            <div class="mb-4">
+                <span class="d-block text-secondary small mb-1">Código de validación</span>
+                <span class="code-pill fs-5 fw-semibold">@Model.CodigoNumerico</span>
+            </div>
 
-    <div class="price-strip" style="text-align:left; display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-        <div><strong>Titular:</strong> @Model.NombreComprador</div>
-        <div><strong>Correo:</strong> @Model.Correo</div>
-        <div><strong>Teléfono:</strong> @Model.Telefono</div>
-        <div><strong>Zona / Accesos:</strong> @Model.Zona (@Model.Cantidad)</div>
-        <div><strong>Total Pagado:</strong> $@Model.TotalPagado.ToString("N2")</div>
-        <div><strong>Fecha:</strong> @Model.FechaCompra.ToString("dd/MM/yyyy HH:mm")</div>
-    </div>
+            <div class="text-start p-3 rounded mb-4 small" style="background-color: var(--bg-main); border: 1px solid var(--border-subtle);">
+                <div class="d-flex justify-content-between py-1">
+                    <span class="text-secondary">Titular</span>
+                    <span>@Model.NombreComprador</span>
+                </div>
+                <div class="d-flex justify-content-between py-1">
+                    <span class="text-secondary">Correo</span>
+                    <span>@Model.Correo</span>
+                </div>
+                <div class="d-flex justify-content-between py-1">
+                    <span class="text-secondary">Zona / Cantidad</span>
+                    <span>@Model.Zona · @Model.Cantidad boleto(s)</span>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-top mt-1 pt-2" style="border-color: var(--border-subtle) !important;">
+                    <span class="text-secondary">Total Pagado</span>
+                    <span class="fw-semibold">@Model.TotalPagado.ToString("C")</span>
+                </div>
+            </div>
 
-    <div style="display:flex; gap:1rem; justify-content:center; margin-top:1rem;">
-        <a asp-action="Consultar" asp-route-buscarCodigo="@Model.CodigoNumerico" class="btn-glass">
-            Verificar en Base de Datos
-        </a>
-        <a asp-action="Index" class="btn-glass btn-secondary-glass">
-            Volver a Cartelera
-        </a>
+            <div class="d-flex gap-2">
+                <a asp-action="Index" class="btn-secondary-minimal flex-grow-1">Ir a Cartelera</a>
+                <a asp-action="Consultar" asp-route-busqueda="@Model.CodigoNumerico" class="btn-glass flex-grow-1">Ver en Mis Boletos</a>
+            </div>
+        </div>
     </div>
 </div>

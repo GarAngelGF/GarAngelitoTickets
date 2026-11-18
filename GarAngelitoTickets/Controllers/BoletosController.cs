@@ -1,9 +1,10 @@
-﻿using GarAngelitoTickets.Data;
+﻿using System.Security.Cryptography;
+using System.Text.Json;
+using GarAngelitoTickets.Data;
 using GarAngelitoTickets.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QRCoder;
-using System.Security.Cryptography;
 
 namespace GarAngelitoTickets.Controllers
 {
@@ -18,36 +19,49 @@ namespace GarAngelitoTickets.Controllers
             _httpClientFactory = httpClientFactory;
         }
 
-        // 1. Pantalla principal de Cartelera
         public async Task<IActionResult> Index()
         {
-            var conciertos = await _context.Conciertos.OrderBy(c => c.Fecha).ToListAsync();
+            var conciertos = await _context.Conciertos
+                .AsNoTracking()
+                .OrderBy(c => c.Fecha)
+                .ToListAsync();
+
             return View(conciertos);
         }
 
-        // 2. Formulario de Compra (Estricto sin datos de prellenado)
         [HttpGet]
         public async Task<IActionResult> Comprar(int id)
         {
-            var concierto = await _context.Conciertos.FindAsync(id);
-            if (concierto == null) return RedirectToAction(nameof(Index));
+            var concierto = await _context.Conciertos
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (concierto == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
 
             ViewBag.Concierto = concierto;
-            // Se envía un modelo completamente vacío para prohibir prellenado
-            ModelState.Clear();
-            return View(new Boleto { ConciertoId = concierto.Id, NombreComprador = "", Correo = "", Telefono = "", Zona = "" });
+            return View(new Boleto { ConciertoId = concierto.Id, Cantidad = 1, Zona = "General" });
         }
 
-        // 3. Procesamiento de Compra y Generación de Código de 6 dígitos
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Comprar(Boleto boleto)
         {
-            var concierto = await _context.Conciertos.FindAsync(boleto.ConciertoId);
-            if (concierto == null) return RedirectToAction(nameof(Index));
+            var concierto = await _context.Conciertos.FirstOrDefaultAsync(c => c.Id == boleto.ConciertoId);
+            if (concierto == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
 
-            ModelState.Remove("CodigoNumerico");
-            ModelState.Remove("Concierto");
+            ModelState.Remove(nameof(boleto.Concierto));
+            ModelState.Remove(nameof(boleto.CodigoNumerico));
+
+            if (boleto.Cantidad > concierto.CupoDisponible)
+            {
+                ModelState.AddModelError("Cantidad", $"Solo quedan {concierto.CupoDisponible} lugares disponibles.");
+            }
 
             if (!ModelState.IsValid)
             {
@@ -55,100 +69,106 @@ namespace GarAngelitoTickets.Controllers
                 return View(boleto);
             }
 
-            // Cálculo del monto total según la zona elegida
-            decimal precioUnitario = boleto.Zona == "VIP" ? concierto.PrecioVIP : concierto.PrecioGeneral;
+            decimal precioUnitario = string.Equals(boleto.Zona, "VIP", StringComparison.OrdinalIgnoreCase)
+                ? concierto.PrecioVIP
+                : concierto.PrecioGeneral;
+
             boleto.TotalPagado = precioUnitario * boleto.Cantidad;
             boleto.FechaCompra = DateTime.Now;
+            boleto.CodigoNumerico = await ObtenerCodigoUnicoAsync();
 
-            // Obtención del código único de 6 posiciones numéricas
-            boleto.CodigoNumerico = await ObtenerCodigoDesdeMicroservicioAsync();
+            concierto.CupoDisponible -= boleto.Cantidad;
 
-            // Descuento de cupo y guardado en SQL Server
-            concierto.CupoDisponible = Math.Max(0, concierto.CupoDisponible - boleto.Cantidad);
             _context.Boletos.Add(boleto);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Confirmacion), new { codigo = boleto.CodigoNumerico });
+            return RedirectToAction(nameof(Confirmacion), new { id = boleto.Id });
         }
 
-        // 4. Pantalla de Confirmación con Código QR
         [HttpGet]
-        public async Task<IActionResult> Confirmacion(string codigo)
+        public async Task<IActionResult> Confirmacion(int id)
         {
-            if (string.IsNullOrWhiteSpace(codigo)) return RedirectToAction(nameof(Index));
-
             var boleto = await _context.Boletos
+                .AsNoTracking()
                 .Include(b => b.Concierto)
-                .FirstOrDefaultAsync(b => b.CodigoNumerico == codigo);
+                .FirstOrDefaultAsync(b => b.Id == id);
 
-            if (boleto == null) return RedirectToAction(nameof(Index));
+            if (boleto == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
 
-            // Al escanear el QR en cualquier celular, muestra directamente el código de 6 dígitos y los datos del boleto
-            string contenidoQr = $"CODIGO: {boleto.CodigoNumerico}\n" +
-                                 $"GarAngelitoTickets\n" +
-                                 $"Titular: {boleto.NombreComprador}\n" +
-                                 $"Evento: {boleto.Concierto?.Artista}\n" +
-                                 $"Zona: {boleto.Zona} ({boleto.Cantidad} accesos)";
+            string contenidoQr = $"GARANGELITO|{boleto.CodigoNumerico}|{boleto.Concierto?.Artista}|{boleto.Zona}|{boleto.Cantidad}";
+            using var qrGenerator = new QRCodeGenerator();
+            using var qrData = qrGenerator.CreateQrCode(contenidoQr, QRCodeGenerator.ECCLevel.Q);
+            using var qrCode = new PngByteQRCode(qrData);
+            byte[] qrBytes = qrCode.GetGraphic(20);
+            ViewBag.QrBase64 = $"data:image/png;base64,{Convert.ToBase64String(qrBytes)}";
 
-            using QRCodeGenerator qrGenerator = new QRCodeGenerator();
-            using QRCodeData qrCodeData = qrGenerator.CreateQrCode(contenidoQr, QRCodeGenerator.ECCLevel.Q);
-            using PngByteQRCode qrCode = new PngByteQRCode(qrCodeData);
-            byte[] qrCodeImage = qrCode.GetGraphic(20);
-
-            ViewBag.QrBase64 = $"data:image/png;base64,{Convert.ToBase64String(qrCodeImage)}";
             return View(boleto);
         }
 
-        // 5. Consulta de Boletos Comprados y Filtro por Código de 6 dígitos
         [HttpGet]
-        public async Task<IActionResult> Consultar(string? buscarCodigo)
+        public async Task<IActionResult> Consultar(string? busqueda)
         {
+            ViewBag.Busqueda = busqueda;
+
             var query = _context.Boletos
+                .AsNoTracking()
                 .Include(b => b.Concierto)
-                .OrderByDescending(b => b.FechaCompra)
                 .AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(buscarCodigo))
+            if (!string.IsNullOrWhiteSpace(busqueda))
             {
-                buscarCodigo = buscarCodigo.Trim();
-                query = query.Where(b => b.CodigoNumerico == buscarCodigo);
+                string filtro = busqueda.Trim();
+                query = query.Where(b =>
+                    b.CodigoNumerico.Contains(filtro) ||
+                    b.Correo.Contains(filtro) ||
+                    b.NombreComprador.Contains(filtro));
             }
 
-            ViewBag.CodigoBuscado = buscarCodigo;
-            var listaBoletos = await query.ToListAsync();
-            return View(listaBoletos);
+            var resultados = await query
+                .OrderByDescending(b => b.FechaCompra)
+                .ToListAsync();
+
+            return View(resultados);
         }
 
-        private async Task<string> ObtenerCodigoDesdeMicroservicioAsync()
+        private async Task<string> ObtenerCodigoUnicoAsync()
         {
             try
             {
-                var client = _httpClientFactory.CreateClient("MicroservicioCodigos");
-                var response = await client.GetFromJsonAsync<CodigoDto>("api/microservicio/generar-codigo");
-                if (response != null && !string.IsNullOrEmpty(response.Codigo))
+                var client = _httpClientFactory.CreateClient();
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var response = await client.GetAsync($"{baseUrl}/api/microservicio/generar");
+
+                if (response.IsSuccessStatusCode)
                 {
-                    return response.Codigo;
+                    var json = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(json);
+                    if (doc.RootElement.TryGetProperty("codigo", out var codProp))
+                    {
+                        var codigo = codProp.GetString();
+                        if (!string.IsNullOrEmpty(codigo))
+                        {
+                            return codigo;
+                        }
+                    }
                 }
             }
             catch
             {
-                // Respaldo automático local si se ejecuta directamente desde Visual Studio sin contenedor auxiliar
+                // Respaldo directo si el llamado HTTP local no responde
             }
 
-            string codigo;
-            bool existe;
+            string nuevoCodigo;
             do
             {
-                codigo = RandomNumberGenerator.GetInt32(100000, 1000000).ToString("D6");
-                existe = await _context.Boletos.AnyAsync(b => b.CodigoNumerico == codigo);
-            } while (existe);
+                nuevoCodigo = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
+            }
+            while (await _context.Boletos.AnyAsync(b => b.CodigoNumerico == nuevoCodigo));
 
-            return codigo;
-        }
-
-        private class CodigoDto
-        {
-            public string Codigo { get; set; } = string.Empty;
+            return nuevoCodigo;
         }
     }
 }
